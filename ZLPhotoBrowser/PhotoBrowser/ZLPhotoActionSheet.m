@@ -185,12 +185,11 @@ double const ScalePhotoWidth = 1000;
 
 - (void)showPreview:(BOOL)preview animate:(BOOL)animate
 {
-    if (![ZLPhotoManager havePhotoLibraryAuthority]) {
-        //注册实施监听相册变化
-        [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
-    }
-    
-    NSAssert(self.sender != nil, @"sender 对象不能为空");
+//    if (![ZLPhotoManager havePhotoLibraryAuthority]) {
+//        //注册实施监听相册变化
+//        [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+//    }
+//    NSAssert(self.sender != nil, @"sender 对象不能为空");
     
     self.animate = animate;
     self.preview = preview;
@@ -213,12 +212,15 @@ double const ScalePhotoWidth = 1000;
         return;
     } else if (status == PHAuthorizationStatusNotDetermined) {
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-            
+            if (status == PHAuthorizationStatusAuthorized) {
+                dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                    [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+                });
+            }
         }];
         
         [self.sender.view addSubview:self];
     }
-    
     if (preview) {
         if (status == PHAuthorizationStatusAuthorized) {
             [self loadPhotoFromAlbum];
